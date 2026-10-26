@@ -1,0 +1,49 @@
+{
+  "document_title": "Unified Building Bye-Laws for Delhi 2016 (UBBL-2016)",
+  "authority": "Delhi Development Authority",
+  "effective_date": "2016-03-22",
+  "provisions": [
+    {
+      "clause": "Clause 7.14.1 - Residential Plotted Setbacks",
+      "category": "setback",
+      "page": "45",
+      "content": "For residential plotted development in Delhi NCT up to 250 sq. m., the minimum front setback shall be 3.0 metres and rear setback shall be 2.0 metres. For plots above 250 sq. m. up to 500 sq. m., the minimum front setback shall be 6.0 metres, rear setback shall be 3.0 metres, and side setbacks shall be 3.0 metres each. For plots exceeding 500 sq. m., front setback shall be 9.0 metres."
+    },
+    {
+      "clause": "Table 7.1 - FAR and Ground Coverage",
+      "category": "floor_area_ratio",
+      "page": "48",
+      "content": "For residential plotted development in Delhi NCT, the maximum Ground Coverage for plots between 250 sq. m. and 750 sq. m. shall not exceed 75% for 250 to 500 sq.m (or 50% for larger plots). The maximum Floor Area Ratio (FAR) permitted without compounding shall be 300 for plots up to 250 sq.m and 225 for plots above 250 sq.m."
+    },
+    {
+      "clause": "Clause 8.1 - Building Height and Stilt Clearances",
+      "category": "building_height",
+      "page": "52",
+      "content": "The maximum permissible building height for residential plotted development in Delhi NCT shall be 15.0 metres without stilt, and 17.5 metres with ground-level stilt parking, subject to minimum front road width of 12.0 metres and airport obstacle limitation surfaces."
+    },
+    {
+      "clause": "Clause 9.3 - Fire Safety and Staircase Specifications",
+      "category": "fire_safety",
+      "page": "78",
+      "content": "Buildings above 15.0 metres in height in Delhi NCT require prior Fire Safety Clearance (No Objection Certificate) from the Delhi Fire Service (DFS). Minimum internal emergency staircase width shall be 1.25 metres for residential buildings, and 1.50 metres for commercial or assembly occupancies. Continuous handrails and pressurized fire towers are mandatory for buildings exceeding 15 metres."
+    },
+    {
+      "clause": "Clause 9.5 - Automatic Fire Detection and Suppression",
+      "category": "fire_safety",
+      "page": "82",
+      "content": "All buildings above 15.0 metres in height or with plot area exceeding 500 sq. m. in Delhi NCT must provide portable ABC dry chemical fire extinguishers on each floor corridor, manual call points, an automatic smoke detection system, and wet risers as per NBC 2016 Part 4."
+    },
+    {
+      "clause": "Clause 10.1 - Mandatory Parking Standards (ECS)",
+      "category": "parking",
+      "page": "94",
+      "content": "Parking provision shall be calculated on the basis of Equivalent Car Spaces (ECS). For residential plotted developments in Delhi NCT, 2.0 ECS per 100 sq. m. of built-up area shall be provided. Surface parking, stilt parking, and multi-level basement parking are permitted to satisfy ECS requirements."
+    },
+    {
+      "clause": "Clause 11.2 - Rainwater Harvesting and Green Norms",
+      "category": "green_building",
+      "page": "108",
+      "content": "Rooftop rainwater harvesting with modular recharge pit and filtration chambers is mandatory for all building plots measuring 100 sq. m. and above in Delhi NCT. Solar photovoltaic panels of minimum 1.0 kWp per 100 sq.m of roof area shall be installed for all plots exceeding 500 sq.m."
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nirmantra-ai"
+version = "0.1.0"
+description = "AI compliance analysis engine for building safety — Delhi NCT"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Proprietary"}
+authors = [
+    {name = "Nirmantra AI Team"},
+]
+
+dependencies = [
+    "pydantic>=2.5,<3",
+    "pydantic-settings>=2.1,<3",
+    "pymupdf>=1.23,<2",         # PDF text extraction (fitz)
+    "pytesseract>=0.3.10,<1",   # OCR wrapper
+    "Pillow>=10.0,<11",         # Image handling for OCR
+    "openai>=1.12,<2",          # LLM & embeddings
+    "chromadb>=0.4,<1",         # Vector store
+    "fastapi>=0.110,<1",        # HTTP API
+    "uvicorn[standard]>=0.27",  # ASGI server
+    "python-multipart>=0.0.9",  # File uploads in FastAPI
+    "tiktoken>=0.6",            # Token counting
+    "reportlab>=4.0,<6",        # PDF audit report generation
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "pytest-cov>=4.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests requiring external services",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 99
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
