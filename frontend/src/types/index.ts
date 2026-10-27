@@ -137,6 +137,21 @@ export interface InspectionPhoto {
   url: string;
 }
 
+export interface LivenessAuditResult {
+  status: "VERIFIED_PHYSICAL_PRESENCE" | "FLAGGED_SPOOF_RISK";
+  confidenceScore: number; // e.g. 98.5
+  imuMotionCorrelated: boolean;
+  screenFlickerDetected: boolean;
+  specularGlareDetected: boolean;
+  motionChallengeCompleted: boolean;
+  challengeStages: {
+    stage: string;
+    description: string;
+    passed: boolean;
+  }[];
+  antiSpoofLog: string[];
+}
+
 export interface LiveVideoEvidence {
   id: string;
   buildingUid: string;
@@ -155,6 +170,7 @@ export interface LiveVideoEvidence {
   };
   tamperProofHash: string;
   caption?: string;
+  livenessVerification?: LivenessAuditResult;
 }
 
 export interface InspectionRecord {

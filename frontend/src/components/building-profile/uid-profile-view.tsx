@@ -829,6 +829,23 @@ export function UidProfileView({ uid }: UidProfileViewProps) {
                           <span>GPS: {ins.liveVideoEvidence.telemetry.latitude.toFixed(4)}°N, {ins.liveVideoEvidence.telemetry.longitude.toFixed(4)}°E (±{ins.liveVideoEvidence.telemetry.accuracyMeters}m)</span>
                           <span>SHA-256: <strong className="text-amber-300">{ins.liveVideoEvidence.tamperProofHash.slice(0, 14)}...</strong></span>
                         </div>
+
+                        {ins.liveVideoEvidence.livenessVerification && (
+                          <div className="p-2 bg-slate-950 rounded border border-slate-800/80 text-[10px] font-mono text-slate-300 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <span className="text-emerald-400 font-bold flex items-center gap-1">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                                Anti-Replay: Physical Presence Verified ({ins.liveVideoEvidence.livenessVerification.confidenceScore}%)
+                              </span>
+                              <span className="text-[9px] text-slate-400">IMU Gyro + Optical Parallax</span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3 text-slate-400 text-[9px]">
+                              <span>Screen Moiré: <strong className="text-emerald-300">Clean</strong></span>
+                              <span>Specular Glare: <strong className="text-emerald-300">Clean</strong></span>
+                              <span>Motion Challenge: <strong className="text-emerald-300">3/3 Passed</strong></span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}

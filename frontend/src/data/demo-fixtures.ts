@@ -694,6 +694,24 @@ export const DEMO_INSPECTIONS: InspectionRecord[] = [
       },
       tamperProofHash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       caption: "Mandatory 360° fire driveway and exit corridor sweep (Pacific Galleria Mall)",
+      livenessVerification: {
+        status: "VERIFIED_PHYSICAL_PRESENCE",
+        confidenceScore: 98.7,
+        imuMotionCorrelated: true,
+        screenFlickerDetected: false,
+        specularGlareDetected: false,
+        motionChallengeCompleted: true,
+        challengeStages: [
+          { stage: "Stage 1", description: "Entry Gate Spatial Calibration", passed: true },
+          { stage: "Stage 2", description: "90° Horizontal Driveway Pan", passed: true },
+          { stage: "Stage 3", description: "30° Apex Elevation Tilt", passed: true },
+        ],
+        antiSpoofLog: [
+          "Zero monitor raster moire detected",
+          "Ambient natural daylight spectrum validated",
+          "Device IMU rotational delta matched visual optical motion",
+        ],
+      },
     },
   },
 ];
