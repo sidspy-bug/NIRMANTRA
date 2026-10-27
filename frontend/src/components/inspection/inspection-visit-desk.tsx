@@ -7,6 +7,7 @@ import {
   Trash2,
   CheckCircle2,
   AlertTriangle,
+  AlertCircle,
   Printer,
   Save,
   ArrowLeft,
@@ -375,33 +376,52 @@ export function InspectionVisitDesk({ inspectionId }: InspectionVisitDeskProps) 
                 <div className="p-3.5 bg-slate-950/90 border-t border-slate-800 space-y-2.5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center space-x-2">
-                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                      <span className="text-xs font-bold text-white">
-                        Anti-Screen-Replay Audit: Physical Presence Certified
-                      </span>
+                      {liveVideo.livenessVerification.status === "VERIFIED_PHYSICAL_PRESENCE" ? (
+                        <>
+                          <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                          <span className="text-xs font-bold text-white">
+                            Anti-Screen-Replay Audit: Physical Presence Certified
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <AlertTriangle className="w-4 h-4 text-red-400 animate-pulse" />
+                          <span className="text-xs font-bold text-red-300">
+                            Anti-Screen-Replay Audit: SPOOF RISK DETECTED
+                          </span>
+                        </>
+                      )}
                     </div>
-                    <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-[10px] font-mono">
-                      CONFIDENCE: {liveVideo.livenessVerification.confidenceScore.toFixed(1)}% NON-REPLAY
+                    <Badge
+                      className={
+                        liveVideo.livenessVerification.status === "VERIFIED_PHYSICAL_PRESENCE"
+                          ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-[10px] font-mono"
+                          : "bg-red-500/20 text-red-300 border-red-500/40 text-[10px] font-mono"
+                      }
+                    >
+                      {liveVideo.livenessVerification.status === "VERIFIED_PHYSICAL_PRESENCE"
+                        ? `CONFIDENCE: ${liveVideo.livenessVerification.confidenceScore.toFixed(1)}% NON-REPLAY`
+                        : `FLAGGED SPOOF: ${liveVideo.livenessVerification.confidenceScore.toFixed(1)}% CONFIDENCE`}
                     </Badge>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] font-mono">
                     <div className="bg-slate-900 p-2 rounded border border-slate-800 space-y-0.5">
-                      <span className="text-slate-400 text-[10px] block">IMU Gyroscope Motion</span>
-                      <span className="text-emerald-400 font-bold">
-                        {liveVideo.livenessVerification.imuMotionCorrelated ? "Correlated with Video" : "Sensor Static"}
+                      <span className="text-slate-400 text-[10px] block">Motion Vectors Satisfied</span>
+                      <span className={liveVideo.livenessVerification.motionChallengeCompleted ? "text-emerald-400 font-bold" : "text-amber-400 font-bold"}>
+                        {liveVideo.livenessVerification.challengeStages.filter(s => s.passed).length} / {liveVideo.livenessVerification.challengeStages.length} Stages
                       </span>
                     </div>
                     <div className="bg-slate-900 p-2 rounded border border-slate-800 space-y-0.5">
-                      <span className="text-slate-400 text-[10px] block">Optical Moiré Frequency</span>
-                      <span className="text-emerald-400 font-bold">
-                        {liveVideo.livenessVerification.screenFlickerDetected ? "Artifact Detected" : "Zero Monitor Raster (Clean)"}
+                      <span className="text-slate-400 text-[10px] block">Screen Replay / Phone Detection</span>
+                      <span className={liveVideo.livenessVerification.floatingScreenDetected ? "text-red-400 font-bold" : "text-emerald-400 font-bold"}>
+                        {liveVideo.livenessVerification.floatingScreenDetected ? "Phone / Screen Detected" : "Zero Moiré / Natural"}
                       </span>
                     </div>
                     <div className="bg-slate-900 p-2 rounded border border-slate-800 space-y-0.5">
-                      <span className="text-slate-400 text-[10px] block">Monitor Specular Glare</span>
-                      <span className="text-emerald-400 font-bold">
-                        {liveVideo.livenessVerification.specularGlareDetected ? "Specular Glare Found" : "Natural Daylight Diffuse"}
+                      <span className="text-slate-400 text-[10px] block">Camera Egomotion Status</span>
+                      <span className={liveVideo.livenessVerification.motionChallengeCompleted ? "text-emerald-400 font-bold" : "text-amber-400 font-bold"}>
+                        {liveVideo.livenessVerification.motionChallengeCompleted ? "Full Scene Parallax" : "Static Camera / Missing Shift"}
                       </span>
                     </div>
                   </div>
@@ -410,9 +430,15 @@ export function InspectionVisitDesk({ inspectionId }: InspectionVisitDeskProps) 
                     <div className="text-[10px] font-mono text-slate-400 pt-1 border-t border-slate-800/80 flex flex-wrap items-center gap-3">
                       <span className="text-slate-500">Guided Motion Challenge:</span>
                       {liveVideo.livenessVerification.challengeStages.map((cs, idx) => (
-                        <span key={idx} className="flex items-center space-x-1 text-slate-300">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                          <span>{cs.stage}: {cs.description}</span>
+                        <span key={idx} className="flex items-center space-x-1">
+                          {cs.passed ? (
+                            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                          ) : (
+                            <AlertCircle className="w-3 h-3 text-red-400" />
+                          )}
+                          <span className={cs.passed ? "text-slate-300" : "text-red-300 line-through"}>
+                            {cs.stage}: {cs.description}
+                          </span>
                         </span>
                       ))}
                     </div>

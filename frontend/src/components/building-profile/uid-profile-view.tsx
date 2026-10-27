@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   CheckCircle2,
   AlertTriangle,
+  AlertCircle,
   Building2,
   MapPin,
   Calendar,
@@ -833,16 +834,29 @@ export function UidProfileView({ uid }: UidProfileViewProps) {
                         {ins.liveVideoEvidence.livenessVerification && (
                           <div className="p-2 bg-slate-950 rounded border border-slate-800/80 text-[10px] font-mono text-slate-300 space-y-1">
                             <div className="flex items-center justify-between">
-                              <span className="text-emerald-400 font-bold flex items-center gap-1">
-                                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                                Anti-Replay: Physical Presence Verified ({ins.liveVideoEvidence.livenessVerification.confidenceScore}%)
-                              </span>
+                              {ins.liveVideoEvidence.livenessVerification.status === "VERIFIED_PHYSICAL_PRESENCE" ? (
+                                <span className="text-emerald-400 font-bold flex items-center gap-1">
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                                  Anti-Replay: Physical Presence Verified ({ins.liveVideoEvidence.livenessVerification.confidenceScore}%)
+                                </span>
+                              ) : (
+                                <span className="text-red-400 font-bold flex items-center gap-1">
+                                  <AlertCircle className="w-3 h-3 text-red-400" />
+                                  Anti-Replay: SPOOF RISK FLAGGED ({ins.liveVideoEvidence.livenessVerification.confidenceScore}%)
+                                </span>
+                              )}
                               <span className="text-[9px] text-slate-400">IMU Gyro + Optical Parallax</span>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 text-slate-400 text-[9px]">
-                              <span>Screen Moiré: <strong className="text-emerald-300">Clean</strong></span>
-                              <span>Specular Glare: <strong className="text-emerald-300">Clean</strong></span>
-                              <span>Motion Challenge: <strong className="text-emerald-300">3/3 Passed</strong></span>
+                              <span>Screen Moiré: <strong className={ins.liveVideoEvidence.livenessVerification.screenFlickerDetected ? "text-red-400" : "text-emerald-300"}>
+                                {ins.liveVideoEvidence.livenessVerification.screenFlickerDetected ? "Detected" : "Clean"}
+                              </strong></span>
+                              <span>Specular Glare: <strong className={ins.liveVideoEvidence.livenessVerification.specularGlareDetected ? "text-red-400" : "text-emerald-300"}>
+                                {ins.liveVideoEvidence.livenessVerification.specularGlareDetected ? "Detected" : "Clean"}
+                              </strong></span>
+                              <span>Motion Challenge: <strong className={ins.liveVideoEvidence.livenessVerification.motionChallengeCompleted ? "text-emerald-300" : "text-amber-400"}>
+                                {ins.liveVideoEvidence.livenessVerification.challengeStages.filter(s => s.passed).length}/3 Passed
+                              </strong></span>
                             </div>
                           </div>
                         )}

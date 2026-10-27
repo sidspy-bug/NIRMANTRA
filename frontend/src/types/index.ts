@@ -143,6 +143,8 @@ export interface LivenessAuditResult {
   imuMotionCorrelated: boolean;
   screenFlickerDetected: boolean;
   specularGlareDetected: boolean;
+  staticPerimeterDetected?: boolean;
+  floatingScreenDetected?: boolean;
   motionChallengeCompleted: boolean;
   challengeStages: {
     stage: string;
