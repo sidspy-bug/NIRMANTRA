@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   FileText,
@@ -15,6 +15,7 @@ import {
   Eye,
   Building,
   Upload,
+  X,
   ShieldCheck,
   Sparkles,
   Play,
@@ -30,6 +31,13 @@ import { ApplicationRecord } from "@/types";
 import { NirmaantraApi } from "@/services/api";
 import { NirmaantraMlService } from "@/services/ml-service";
 import { useAuth } from "@/context/auth-context";
+
+interface AttachedEvidenceFile {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+}
 
 interface ApplicationDossierViewProps {
   applicationId: string;
@@ -51,6 +59,56 @@ export function ApplicationDossierView({ applicationId }: ApplicationDossierView
   const [overrideJustification, setOverrideJustification] = useState("");
   const [savingReview, setSavingReview] = useState(false);
   const [reviewNotice, setReviewNotice] = useState<string | null>(null);
+
+  // Supporting Evidence Upload State
+  const [evidenceFiles, setEvidenceFiles] = useState<AttachedEvidenceFile[]>([]);
+  const [isDraggingEvidence, setIsDraggingEvidence] = useState(false);
+  const evidenceInputRef = useRef<HTMLInputElement>(null);
+
+  const handleEvidenceFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      addEvidenceFiles(Array.from(e.target.files));
+      e.target.value = "";
+    }
+  };
+
+  const addEvidenceFiles = (files: File[]) => {
+    const validFiles: AttachedEvidenceFile[] = [];
+    for (const file of files) {
+      if (file.size > 25 * 1024 * 1024) {
+        alert(`File "${file.name}" exceeds the 25MB limit.`);
+        continue;
+      }
+      validFiles.push({
+        id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        name: file.name,
+        size: file.size,
+        type: file.type || "application/pdf",
+      });
+    }
+    if (validFiles.length > 0) {
+      setEvidenceFiles((prev) => [...prev, ...validFiles]);
+    }
+  };
+
+  const handleEvidenceDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingEvidence(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      addEvidenceFiles(Array.from(e.dataTransfer.files));
+    }
+  };
+
+  const removeEvidenceFile = (id: string) => {
+    setEvidenceFiles((prev) => prev.filter((f) => f.id !== id));
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
 
   // AI Compliance State
   const [runningAiAudit, setRunningAiAudit] = useState(false);
@@ -176,7 +234,10 @@ export function ApplicationDossierView({ applicationId }: ApplicationDossierView
       ? {
           originalFinding,
           writtenJustification: overrideJustification,
-          evidenceUrls: ["evidence-site-survey-comp.pdf"],
+          evidenceUrls:
+            evidenceFiles.length > 0
+              ? evidenceFiles.map((f) => f.name)
+              : ["evidence-site-survey-comp.pdf"],
         }
       : undefined;
 
@@ -708,13 +769,91 @@ export function ApplicationDossierView({ applicationId }: ApplicationDossierView
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-amber-900 mb-0.5">
-                          Attach Supporting Evidence
-                        </label>
-                        <div className="border border-dashed border-amber-300 rounded p-2 text-center bg-white">
-                          <Upload className="w-4 h-4 mx-auto text-amber-600 mb-1" />
-                          <span className="text-[10px] text-amber-900">Upload site survey report or committee resolution</span>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="block text-[10px] font-bold text-amber-900">
+                            Attach Supporting Evidence
+                          </label>
+                          {evidenceFiles.length > 0 && (
+                            <span className="text-[10px] font-semibold text-amber-800 bg-amber-100/80 px-1.5 py-0.2 rounded">
+                              {evidenceFiles.length} file{evidenceFiles.length > 1 ? "s" : ""} selected
+                            </span>
+                          )}
                         </div>
+
+                        {/* Hidden Native File Input */}
+                        <input
+                          ref={evidenceInputRef}
+                          type="file"
+                          multiple
+                          accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+                          className="hidden"
+                          onChange={handleEvidenceFileChange}
+                        />
+
+                        {/* Interactive Drag & Drop / Click Zone */}
+                        <div
+                          onClick={() => evidenceInputRef.current?.click()}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            setIsDraggingEvidence(true);
+                          }}
+                          onDragLeave={() => setIsDraggingEvidence(false)}
+                          onDrop={handleEvidenceDrop}
+                          className={`border-2 border-dashed rounded-md p-3 text-center cursor-pointer transition-all ${
+                            isDraggingEvidence
+                              ? "border-amber-600 bg-amber-100/60 scale-[1.01]"
+                              : "border-amber-300 bg-white hover:border-amber-500 hover:bg-amber-50/40"
+                          }`}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              evidenceInputRef.current?.click();
+                            }
+                          }}
+                        >
+                          <Upload className="w-4 h-4 mx-auto text-amber-600 mb-1" />
+                          <p className="text-[11px] font-bold text-amber-950">
+                            Click or drag files here to upload
+                          </p>
+                          <p className="text-[10px] text-amber-800/80 mt-0.5">
+                            Site survey report, committee resolution, or photo evidence (PDF, PNG, JPG up to 25MB)
+                          </p>
+                        </div>
+
+                        {/* Attached Files List */}
+                        {evidenceFiles.length > 0 && (
+                          <div className="mt-2 space-y-1.5 max-h-36 overflow-y-auto">
+                            {evidenceFiles.map((file) => (
+                              <div
+                                key={file.id}
+                                className="flex items-center justify-between p-1.5 px-2 bg-white rounded border border-amber-200 text-[11px] shadow-2xs"
+                              >
+                                <div className="flex items-center space-x-2 truncate mr-2">
+                                  <FileText className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                  <span className="font-semibold text-slate-800 truncate" title={file.name}>
+                                    {file.name}
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 shrink-0">
+                                    ({formatFileSize(file.size)})
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeEvidenceFile(file.id);
+                                  }}
+                                  className="text-slate-400 hover:text-red-600 p-0.5 rounded transition-colors"
+                                  title="Remove file"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -761,7 +900,7 @@ export function ApplicationDossierView({ applicationId }: ApplicationDossierView
                 </div>
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                   <span className="text-slate-500">Zonal Municipality</span>
-                  <span className="font-semibold text-slate-800">{app.city || "Delhi NCR"}</span>
+                  <span className="font-semibold text-slate-800">{app.city || "Delhi"}</span>
                 </div>
                 <div className="p-2.5 bg-slate-50 rounded-md border border-slate-200 text-[11px] text-slate-600">
                   {app.status === "Approved"
@@ -808,11 +947,29 @@ export function ApplicationDossierView({ applicationId }: ApplicationDossierView
                   </p>
                 )}
                 {app.supervisorOverride && (
-                  <div className="mt-2 p-2 bg-white rounded border border-slate-200 text-[11px] space-y-1">
+                  <div className="mt-2 p-2 bg-white rounded border border-slate-200 text-[11px] space-y-1.5">
                     <p className="font-bold text-amber-900">
                       Disclosed Override: {app.supervisorOverride.overrideId}
                     </p>
                     <p className="text-slate-600">{app.supervisorOverride.writtenJustification}</p>
+                    {app.supervisorOverride.supportingEvidenceUrls && app.supervisorOverride.supportingEvidenceUrls.length > 0 && (
+                      <div className="pt-1.5 border-t border-slate-100">
+                        <span className="text-[10px] font-bold text-slate-700 block mb-1">
+                          Attached Supporting Evidence:
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {app.supervisorOverride.supportingEvidenceUrls.map((url, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center space-x-1 px-2 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-200 text-[10px] font-mono"
+                            >
+                              <FileText className="w-3 h-3 text-amber-600" />
+                              <span>{url}</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>

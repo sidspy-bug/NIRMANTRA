@@ -99,7 +99,7 @@ export default function LoginPage() {
               Building Safety & Compliance Portal
             </p>
             <p className="text-[11px] text-slate-600 font-serif">
-              निर्माण सुरक्षा एवं अनुपालन पोर्टल • दिल्ली राष्ट्रीय राजधानी क्षेत्र
+              निर्माण सुरक्षा एवं अनुपालन पोर्टल • दिल्ली
             </p>
           </div>
         </div>

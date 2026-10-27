@@ -18,8 +18,8 @@ import {
 } from "lucide-react";
 import {
   FlagOfIndia,
-  StateEmblemOfIndia,
-  DelhiNcrLogo,
+  BuildingSafetyEmblem,
+  DelhiLogo,
   NirmaantraLogo,
   UserAvatarIcon,
 } from "@/components/common/emblems";
@@ -82,7 +82,7 @@ export function GovHeader() {
             <span className="font-semibold text-slate-900 tracking-tight">भारत सरकार</span>
             <span className="text-slate-300">|</span>
             <span className="font-semibold text-slate-800 tracking-tight uppercase">
-              GOVERNMENT OF NCT OF DELHI / NCR
+              GOVERNMENT OF NCT OF DELHI
             </span>
           </div>
 
@@ -143,12 +143,12 @@ export function GovHeader() {
         </div>
       </div>
 
-      {/* 2. Department Identity Header with Branding, Search, Delhi NCR Logo & Profile Dropdown */}
+      {/* 2. Department Identity Header with Branding, Search, Delhi Logo & Profile Dropdown */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Left: State Emblem + Official NIRMAANTRA Branding */}
         <div className="flex items-center space-x-3.5 shrink-0">
           <Link href="/" className="flex items-center space-x-3 group">
-            <StateEmblemOfIndia className="w-11 h-14 text-slate-800 group-hover:scale-105 transition-transform" />
+            <BuildingSafetyEmblem className="w-11 h-14 text-slate-800 group-hover:scale-105 transition-transform" />
 
             <div className="h-10 w-[1px] bg-slate-200 mx-1 hidden sm:block" />
 
@@ -158,7 +158,7 @@ export function GovHeader() {
                 Building Safety & Compliance Portal
               </p>
               <p className="text-[11px] text-slate-500 font-serif">
-                निर्माण सुरक्षा एवं अनुपालन पोर्टल • दिल्ली राष्ट्रीय राजधानी क्षेत्र
+                निर्माण सुरक्षा एवं अनुपालन पोर्टल • दिल्ली
               </p>
             </div>
           </Link>
@@ -184,11 +184,11 @@ export function GovHeader() {
           </form>
         </div>
 
-        {/* Right Section: Delhi NCR Official Logo + User Profile Avatar Dropdown */}
+        {/* Right Section: Delhi Official Logo + User Profile Avatar Dropdown */}
         <div className="flex items-center space-x-4 shrink-0">
-          {/* Official Delhi NCR Circular Heritage Emblem */}
+          {/* Official Delhi Circular Heritage Emblem */}
           <div className="hidden sm:flex items-center">
-            <DelhiNcrLogo className="w-12 h-12 hover:scale-105 transition-transform" />
+            <DelhiLogo className="w-12 h-12 hover:scale-105 transition-transform" />
           </div>
 
           {/* User Profile Avatar Dropdown */}

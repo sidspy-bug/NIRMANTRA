@@ -46,7 +46,7 @@ export default function SplashScreen() {
             Building Safety & Compliance Portal
           </h2>
           <p className="text-xs text-slate-500 font-serif">
-            निर्माण सुरक्षा एवं अनुपालन पोर्टल • दिल्ली राष्ट्रीय राजधानी क्षेत्र
+            निर्माण सुरक्षा एवं अनुपालन पोर्टल • दिल्ली
           </p>
         </div>
 
