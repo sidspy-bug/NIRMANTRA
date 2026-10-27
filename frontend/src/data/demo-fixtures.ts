@@ -677,6 +677,24 @@ export const DEMO_INSPECTIONS: InspectionRecord[] = [
     aiImageAnalysisStatus: "Analyzed",
     aiObservationsNotice: "Image analysis confirmed clear emergency exit path and visible wet riser inlet.",
     isDemoFixture: true,
+    liveVideoEvidence: {
+      id: "vid-2026-042",
+      buildingUid: "NB-DL-2025-104",
+      inspectionId: "INS-2026-042",
+      recordedAt: "2026-04-14T11:55:00Z",
+      durationSeconds: 24,
+      officerId: "OFF-NARANG-02",
+      officerName: "Insp. S. K. Narang",
+      storageKey: "video_NB-DL-2025-104_INS-2026-042",
+      telemetry: {
+        latitude: 28.6280,
+        longitude: 77.1350,
+        accuracyMeters: 3.8,
+        altitudeMeters: 216,
+      },
+      tamperProofHash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      caption: "Mandatory 360° fire driveway and exit corridor sweep (Pacific Galleria Mall)",
+    },
   },
 ];
 

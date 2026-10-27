@@ -137,6 +137,26 @@ export interface InspectionPhoto {
   url: string;
 }
 
+export interface LiveVideoEvidence {
+  id: string;
+  buildingUid: string;
+  inspectionId: string;
+  recordedAt: string;
+  durationSeconds: number;
+  officerId: string;
+  officerName: string;
+  videoUrl?: string;
+  storageKey: string;
+  telemetry: {
+    latitude: number;
+    longitude: number;
+    accuracyMeters: number;
+    altitudeMeters?: number | null;
+  };
+  tamperProofHash: string;
+  caption?: string;
+}
+
 export interface InspectionRecord {
   id: string; // e.g. "INS-2026-081"
   buildingUid: string;
@@ -158,6 +178,7 @@ export interface InspectionRecord {
   isAccountBlocked?: boolean;
   accountBlockNotice?: string;
   isDemoFixture?: boolean;
+  liveVideoEvidence?: LiveVideoEvidence;
 }
 
 export interface BuildingSafetyRecord {
@@ -271,6 +292,7 @@ export interface BuildingRecord {
   safetyRecord?: BuildingSafetyRecord;
   maintenanceRecord?: BuildingMaintenanceRecord;
   isDemoFixture?: boolean;
+  liveVideoEvidence?: LiveVideoEvidence;
 }
 
 export type GrievanceStatus =

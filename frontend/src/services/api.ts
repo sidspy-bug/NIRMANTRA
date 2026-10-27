@@ -6,6 +6,7 @@ import {
   NoticeRecord,
   SupervisorOverride,
   ComplianceReport,
+  LiveVideoEvidence,
 } from "@/types";
 import {
   DEMO_APPLICATIONS,
@@ -253,7 +254,8 @@ export const NirmaantraApi = {
     inspectionId: string,
     photos: InspectionRecord["photos"],
     observations: string,
-    markCompleted: boolean = false
+    markCompleted: boolean = false,
+    liveVideo?: LiveVideoEvidence
   ): Promise<InspectionRecord | null> {
     const list = await this.getInspections();
     const insp = list.find((i) => i.id.toLowerCase() === inspectionId.toLowerCase());
@@ -261,6 +263,9 @@ export const NirmaantraApi = {
 
     insp.photos = photos;
     insp.inspectorObservations = observations;
+    if (liveVideo) {
+      insp.liveVideoEvidence = liveVideo;
+    }
     if (markCompleted) {
       insp.status = "Completed";
       insp.completedAt = new Date().toISOString();
@@ -268,6 +273,18 @@ export const NirmaantraApi = {
 
     const updated = list.map((i) => (i.id === insp.id ? insp : i));
     setLocalStore(STORAGE_KEYS.INSPECTIONS, updated);
+
+    // Also persist live video directly to linked building UID record
+    if (liveVideo && insp.buildingUid) {
+      const buildings = await this.getBuildings();
+      const bld = buildings.find((b) => b.uid.toLowerCase() === insp.buildingUid.toLowerCase());
+      if (bld) {
+        bld.liveVideoEvidence = liveVideo;
+        const updatedBlds = buildings.map((b) => (b.uid === bld.uid ? b : b));
+        setLocalStore(STORAGE_KEYS.BUILDINGS, updatedBlds);
+      }
+    }
+
     return insp;
   },
 

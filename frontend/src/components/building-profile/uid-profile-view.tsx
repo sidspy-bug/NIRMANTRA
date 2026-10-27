@@ -39,6 +39,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BuildingRecord, InspectionRecord, GrievanceRecord } from "@/types";
 import { NirmaantraApi } from "@/services/api";
+import { getVideoBlobUrl } from "@/lib/video-storage";
 import { BuildingQrPlacardModal } from "./building-qr-placard-modal";
 
 interface UidProfileViewProps {
@@ -63,7 +64,16 @@ export function UidProfileView({ uid }: UidProfileViewProps) {
       setBuilding(bData);
 
       const allInspections = await NirmaantraApi.getInspections();
-      setInspections(allInspections.filter((i) => i.buildingUid.toLowerCase() === uid.toLowerCase()));
+      const matchedInsps = allInspections.filter((i) => i.buildingUid.toLowerCase() === uid.toLowerCase());
+      
+      // Resolve any IndexedDB video URLs for public viewing
+      for (const ins of matchedInsps) {
+        if (ins.liveVideoEvidence?.storageKey && !ins.liveVideoEvidence.videoUrl) {
+          const blobUrl = await getVideoBlobUrl(ins.liveVideoEvidence.storageKey);
+          if (blobUrl) ins.liveVideoEvidence.videoUrl = blobUrl;
+        }
+      }
+      setInspections(matchedInsps);
 
       const allGrievances = await NirmaantraApi.getGrievances();
       setGrievances(allGrievances.filter((g) => g.buildingUid?.toLowerCase() === uid.toLowerCase()));
@@ -796,6 +806,32 @@ export function UidProfileView({ uid }: UidProfileViewProps) {
                       </Button>
                     </Link>
                   </div>
+                  {ins.liveVideoEvidence && (
+                    <div className="w-full mt-2.5 pt-2.5 border-t border-slate-200">
+                      <div className="bg-slate-900 rounded-lg p-3 text-white space-y-2">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-bold text-emerald-400 flex items-center gap-1.5">
+                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                            Verified In-App 360° Safety Sweep Video
+                          </span>
+                          <span className="font-mono text-[10px] text-slate-300 bg-slate-800 px-2 py-0.5 rounded">
+                            {ins.liveVideoEvidence.durationSeconds}s Sweep • Locked to UID
+                          </span>
+                        </div>
+                        {ins.liveVideoEvidence.videoUrl && (
+                          <video
+                            src={ins.liveVideoEvidence.videoUrl}
+                            controls
+                            className="w-full max-h-56 rounded bg-black object-contain"
+                          />
+                        )}
+                        <div className="flex flex-wrap items-center justify-between text-[10px] font-mono text-slate-400 gap-1.5 pt-1 border-t border-slate-800/80">
+                          <span>GPS: {ins.liveVideoEvidence.telemetry.latitude.toFixed(4)}°N, {ins.liveVideoEvidence.telemetry.longitude.toFixed(4)}°E (±{ins.liveVideoEvidence.telemetry.accuracyMeters}m)</span>
+                          <span>SHA-256: <strong className="text-amber-300">{ins.liveVideoEvidence.tamperProofHash.slice(0, 14)}...</strong></span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))
             )}

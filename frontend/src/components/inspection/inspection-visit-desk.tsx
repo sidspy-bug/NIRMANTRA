@@ -16,12 +16,18 @@ import {
   FileCheck2,
   Eye,
   ShieldCheck,
+  Video,
+  MapPin,
+  Clock,
+  RotateCcw,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { InspectionRecord, InspectionPhoto } from "@/types";
+import { InspectionRecord, InspectionPhoto, LiveVideoEvidence } from "@/types";
+import { LiveVideoRecorderModal } from "./live-video-recorder-modal";
+import { getVideoBlobUrl } from "@/lib/video-storage";
 import { NirmaantraApi } from "@/services/api";
 
 const VIEW_TYPES: InspectionPhoto["viewType"][] = [
@@ -51,6 +57,11 @@ export function InspectionVisitDesk({ inspectionId }: InspectionVisitDeskProps) 
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // Live Video Audit State (Anti-Morphing)
+  const [liveVideo, setLiveVideo] = useState<LiveVideoEvidence | null>(null);
+  const [liveVideoUrl, setLiveVideoUrl] = useState<string | null>(null);
+  const [isRecorderModalOpen, setIsRecorderModalOpen] = useState(false);
+
   useEffect(() => {
     async function load() {
       setLoading(true);
@@ -59,6 +70,14 @@ export function InspectionVisitDesk({ inspectionId }: InspectionVisitDeskProps) 
         setRecord(data);
         setPhotos(data.photos || []);
         setObservations(data.inspectorObservations || "");
+        if (data.liveVideoEvidence) {
+          setLiveVideo(data.liveVideoEvidence);
+          if (data.liveVideoEvidence.storageKey) {
+            getVideoBlobUrl(data.liveVideoEvidence.storageKey).then((url) => {
+              if (url) setLiveVideoUrl(url);
+            });
+          }
+        }
       }
       setLoading(false);
     }
@@ -87,11 +106,27 @@ export function InspectionVisitDesk({ inspectionId }: InspectionVisitDeskProps) 
     setPhotos((prev) => prev.filter((p) => p.id !== id));
   };
 
+  const handleVideoRecorded = (evidence: LiveVideoEvidence, blob: Blob) => {
+    setLiveVideo(evidence);
+    setLiveVideoUrl(URL.createObjectURL(blob));
+    setSaveNotice("Live 360° video sweep captured with anti-morphing telemetry. Save progress to seal permanently.");
+  };
+
+  const handleRemoveLiveVideo = () => {
+    if (confirm("Remove the recorded live video sweep?")) {
+      setLiveVideo(null);
+      if (liveVideoUrl) {
+        URL.revokeObjectURL(liveVideoUrl);
+        setLiveVideoUrl(null);
+      }
+    }
+  };
+
   const handleSaveDraft = async () => {
     if (!record) return;
     setSaving(true);
     setSaveNotice(null);
-    const updated = await NirmaantraApi.saveInspectionVisit(record.id, photos, observations, false);
+    const updated = await NirmaantraApi.saveInspectionVisit(record.id, photos, observations, false, liveVideo || undefined);
     if (updated) {
       setRecord({ ...updated });
       setSaveNotice("Inspection draft progress saved. You can resume at any time.");
@@ -111,7 +146,7 @@ export function InspectionVisitDesk({ inspectionId }: InspectionVisitDeskProps) 
       }
     }
     setSaving(true);
-    const updated = await NirmaantraApi.saveInspectionVisit(record.id, photos, observations, true);
+    const updated = await NirmaantraApi.saveInspectionVisit(record.id, photos, observations, true, liveVideo || undefined);
     if (updated) {
       setRecord({ ...updated });
       setSaveNotice("Field audit finalized. Official inspection report generated and archived.");
@@ -240,7 +275,130 @@ export function InspectionVisitDesk({ inspectionId }: InspectionVisitDeskProps) 
           </div>
         </div>
 
-        {/* Target 10-20 Photo Gallery Section */}
+        {/* Live Video Evidence Section (Anti-Morphing Protocol) */}
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-100 gap-2">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 flex items-center">
+                <Video className="w-4 h-4 mr-1.5 text-red-600" />
+                Live 360° Safety Sweep Video (Anti-Morphing Protocol)
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                Mandatory in-app continuous live video sweep bound directly to Building UID <strong>{record.buildingUid}</strong>. File gallery uploads are locked.
+              </p>
+            </div>
+            {liveVideo ? (
+              <Badge variant="success" className="text-[10px] uppercase font-mono tracking-wider">
+                ✓ Video Verified & Bound
+              </Badge>
+            ) : (
+              <Badge variant="warning" className="text-[10px] uppercase font-mono tracking-wider">
+                Pending Live Sweep
+              </Badge>
+            )}
+          </div>
+
+          {liveVideo ? (
+            /* Live Video Player with Telemetry Stamp */
+            <div className="bg-slate-900 rounded-xl overflow-hidden border border-slate-800 text-white shadow-md">
+              <div className="p-3 bg-slate-950/80 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="flex items-center space-x-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="font-bold text-emerald-300">
+                    DIRECT CAMERA SWEEP SEALED
+                  </span>
+                  <span className="text-[10px] bg-slate-800 text-slate-300 font-mono px-2 py-0.5 rounded">
+                    {liveVideo.durationSeconds}s Continuous Tape
+                  </span>
+                </div>
+
+                <div className="flex items-center space-x-2 print:hidden">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsRecorderModalOpen(true)}
+                    className="h-7 text-xs border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200"
+                  >
+                    <RotateCcw className="w-3 h-3 mr-1" /> Retake Sweep
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRemoveLiveVideo}
+                    className="h-7 text-xs border-red-900/60 bg-red-950/50 hover:bg-red-900/60 text-red-300"
+                  >
+                    <Trash2 className="w-3 h-3 mr-1" /> Remove
+                  </Button>
+                </div>
+              </div>
+
+              {/* Video Player */}
+              <div className="relative aspect-video max-h-80 w-full bg-black flex items-center justify-center">
+                {liveVideoUrl || liveVideo.videoUrl ? (
+                  <video
+                    src={liveVideoUrl || liveVideo.videoUrl}
+                    controls
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <div className="p-6 text-center text-xs text-slate-400">
+                    <Video className="w-8 h-8 mx-auto text-slate-600 mb-2" />
+                    Video stream stored locally in IndexedDB.
+                  </div>
+                )}
+              </div>
+
+              {/* Telemetry Strip */}
+              <div className="p-3 bg-slate-950 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-[11px] font-mono text-slate-300">
+                <div className="flex items-center space-x-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span className="truncate">
+                    GPS: {liveVideo.telemetry.latitude.toFixed(4)}°N, {liveVideo.telemetry.longitude.toFixed(4)}°E (±{liveVideo.telemetry.accuracyMeters}m)
+                  </span>
+                </div>
+                <div className="flex items-center space-x-1.5">
+                  <Clock className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                  <span>
+                    Recorded: {new Date(liveVideo.recordedAt).toLocaleTimeString("en-IN")} IST
+                  </span>
+                </div>
+                <div className="flex items-center space-x-1.5 truncate">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span className="truncate text-slate-400">
+                    SHA-256: <strong className="text-amber-300">{liveVideo.tamperProofHash.slice(0, 14)}...</strong>
+                  </span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Call to Action to Record Video */
+            <div className="p-5 rounded-xl border-2 border-dashed border-red-200 bg-red-50/40 text-center space-y-3 print:hidden">
+              <div className="w-12 h-12 rounded-full bg-red-100 text-red-700 flex items-center justify-center mx-auto shadow-xs">
+                <Video className="w-6 h-6" />
+              </div>
+              <div className="max-w-md mx-auto">
+                <h4 className="text-sm font-bold text-slate-900">
+                  Record In-App 360° Safety Sweep Video
+                </h4>
+                <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                  To prevent fabricated or pre-recorded submissions, file gallery upload is locked. Tap below to launch the live camera with real-time GPS & Building UID watermark.
+                </p>
+              </div>
+
+              <div>
+                <Button
+                  onClick={() => setIsRecorderModalOpen(true)}
+                  className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 shadow-xs"
+                >
+                  <Video className="w-3.5 h-3.5 mr-1.5" />
+                  Launch Live Camera Sweep (Max 30s)
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
+                {/* Target 10-20 Photo Gallery Section */}
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-100 gap-2">
             <div>
@@ -413,6 +571,17 @@ export function InspectionVisitDesk({ inspectionId }: InspectionVisitDeskProps) 
           </div>
         </div>
       </div>
+      {/* Live Video Recorder Modal */}
+      <LiveVideoRecorderModal
+        isOpen={isRecorderModalOpen}
+        onClose={() => setIsRecorderModalOpen(false)}
+        buildingUid={record.buildingUid}
+        buildingName={record.buildingName}
+        inspectionId={record.id}
+        officerName={record.assignedOfficer}
+        officerId={record.assignedOfficerId}
+        onVideoRecorded={handleVideoRecorded}
+      />
     </div>
   );
 }
